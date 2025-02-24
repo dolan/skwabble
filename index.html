@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Scrabble Solo Dev Kit</title>
+    <title>Skwabble</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="board"></div>
     <div id="controls">
-        <button onclick="endTurn()">End Turn</button>
-        <button onclick="tradeTiles()">Trade Selected Tiles</button>
+        <div id="status">
+            <div id="score">Score: 0</div>
+            <div id="message"></div>
+        </div>
         <div id="tray"></div>
-        <div id="status"></div>
+        <div class="button-group">
+            <button onclick="endTurn()">End Turn</button>
+            <button onclick="tradeTiles()">Trade Selected Tiles</button>
+        </div>
     </div>
-
     <script type="module" src="game.js"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ class Game {
             Array(BOARD_SIZE).fill(null));
         this.bonuses = this.generateBonuses();
         this.tray = [];
+        this.totalScore = 0;
         this.initBoard();
         this.drawTiles(7);
         this.dictionary = new Trie();
@@ -341,6 +342,11 @@ class Game {
 
         return words;
     }
+
+    updateStatus(message) {
+        document.getElementById('message').textContent = message;
+        document.getElementById('score').textContent = `Score: ${this.totalScore}`;
+    }
 }
 
 // Initialize game and load dictionary
@@ -351,33 +357,32 @@ game.loadDictionary();
 window.endTurn = () => {
     const words = game.findWords();
     if (words.length === 0) {
-        document.getElementById('status').textContent = 'No valid words formed';
+        game.updateStatus('No valid words formed');
         return;
     }
 
     const invalidWords = [];
-    let totalScore = 0;
+    let turnScore = 0;
     
     for (const word of words) {
         if (!game.validateWord(word.word)) {
             invalidWords.push(word.word);
         } else {
-            totalScore += word.score;
+            turnScore += word.score;
         }
     }
     
     if (invalidWords.length > 0) {
-        document.getElementById('status').textContent = 
-            `Invalid words: ${invalidWords.join(', ')}`;
+        game.updateStatus(`Invalid words: ${invalidWords.join(', ')}`);
         return;
     }
 
     if (game.currentTurn.length === 7) {
-        totalScore += 50;
+        turnScore += 50;
     }
 
-    document.getElementById('status').textContent = 
-        `Turn complete! Words: ${words.map(w => w.word).join(', ')}. Score: ${totalScore}`;
+    game.totalScore += turnScore;
+    game.updateStatus(`Turn complete! Words: ${words.map(w => w.word).join(', ')}. Turn score: ${turnScore}`);
     
     game.drawTiles(7 - game.tray.length);
     game.currentTurn = [];
