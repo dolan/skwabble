@@ -1,0 +1,60 @@
+# Ignore node modules
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Ignore package manager lock files (uncomment if using one)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Ignore build directories
+dist/
+build/
+out/
+.cache/
+.temp/
+.vite/
+
+# Ignore environment variables and secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore log files and OS files
+*.log
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Ignore dependency caches
+/.pnp
+.pnp.js
+
+# Ignore IDE/editor-specific files
+.idea/
+.vscode/
+*.code-workspace
+
+# Ignore coverage reports
+coverage/
+*.lcov
+
+# Ignore TypeScript build artifacts (if using TypeScript)
+*.tsbuildinfo
+
+# Ignore generated documentation
+docs/
+
+# Ignore Cursor's local AI-generated files (if applicable)
+cursor.json
+cursor-config.json
+
+# Ignore optional lint/cache files
+eslintcache
+.prettier-cache/
+stylelintcache
