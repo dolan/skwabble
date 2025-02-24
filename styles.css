@@ -55,11 +55,17 @@ body {
     bottom: 2px; 
     right: 2px;
     font-size: 0.6em; 
-    color: #c00;
+    color: #666;
 }
 
-.bonus {
-    background: #ffe4e4;
+.bonus[data-bonus^="2W"],
+.bonus[data-bonus^="3W"] {
+    background: #ffebf3;  /* Light pink for word multipliers */
+}
+
+.bonus[data-bonus^="2L"],
+.bonus[data-bonus^="3L"] {
+    background: #e6f3ff;  /* Light blue for letter multipliers */
 }
 
 .tile { 

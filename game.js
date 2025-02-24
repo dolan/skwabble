@@ -53,8 +53,16 @@ class Game {
                 cell.ondrop = (e) => {
                     e.preventDefault();
                     cell.classList.remove('dragover');
-                    const tileIndex = e.dataTransfer.getData('text/plain');
-                    this.placeTile(x, y, parseInt(tileIndex));
+                    const data = e.dataTransfer.getData('text/plain');
+                    if (data.startsWith('board:')) {
+                        // Moving from another board position
+                        const [oldX, oldY] = data.substring(6).split(',').map(Number);
+                        this.moveTile(oldX, oldY, x, y);
+                    } else {
+                        // Moving from tray
+                        const tileIndex = parseInt(data);
+                        this.placeTile(x, y, tileIndex);
+                    }
                 };
                 cell.ondragleave = () => {
                     cell.classList.remove('dragover');
@@ -121,8 +129,26 @@ class Game {
         
         const tile = document.createElement('div');
         tile.className = 'tile placed';
-        tile.textContent = letter;
+        
+        // Create letter span
+        const letterSpan = document.createElement('span');
+        letterSpan.textContent = letter;
+        tile.appendChild(letterSpan);
+        
+        // Create points span
+        const pointSpan = document.createElement('span');
+        pointSpan.className = 'points';
+        pointSpan.textContent = this.getLetterScore(letter);
+        tile.appendChild(pointSpan);
+        
+        // Make current turn tiles draggable
+        tile.draggable = true;
+        tile.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', `board:${x},${y}`);
+            e.dataTransfer.effectAllowed = 'move';
+        };
         tile.onclick = () => this.withdrawTile(x, y);
+        
         this.board[y][x] = letter;
         
         const cell = document.querySelector(`#board .cell:nth-child(${y * BOARD_SIZE + x + 1})`);
@@ -363,6 +389,56 @@ class Game {
     updateStatus(message) {
         document.getElementById('message').textContent = message;
         document.getElementById('score').textContent = `Score: ${this.totalScore}`;
+    }
+
+    moveTile(fromX, fromY, toX, toY) {
+        // Check if the tile is from the current turn
+        const tileIndex = this.currentTurn.findIndex(tile => tile.x === fromX && tile.y === fromY);
+        if (tileIndex === -1) {
+            console.debug('Cannot move tile from previous turn');
+            return;
+        }
+
+        // Check if destination is empty
+        if (this.board[toY][toX]) {
+            console.debug('Destination cell is occupied');
+            return;
+        }
+
+        // Move the tile
+        const tile = this.currentTurn[tileIndex];
+        this.board[fromY][fromX] = null;
+        this.board[toY][toX] = tile.letter;
+
+        // Update the tile's position in currentTurn
+        this.currentTurn[tileIndex] = { ...tile, x: toX, y: toY };
+
+        // Update DOM - move the entire tile element to maintain draggability
+        const fromCell = document.querySelector(`#board .cell:nth-child(${fromY * BOARD_SIZE + fromX + 1})`);
+        const toCell = document.querySelector(`#board .cell:nth-child(${toY * BOARD_SIZE + toX + 1})`);
+        const tileElement = fromCell.firstChild;
+        
+        // Update the drag data to reflect new position
+        tileElement.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', `board:${toX},${toY}`);
+            e.dataTransfer.effectAllowed = 'move';
+        };
+        
+        fromCell.removeChild(tileElement);
+        toCell.appendChild(tileElement);
+    }
+
+    recallTiles() {
+        // Return all tiles from current turn to tray
+        for (const tile of this.currentTurn) {
+            this.tray.push(tile.letter);
+            const cell = document.querySelector(`#board .cell:nth-child(${tile.y * BOARD_SIZE + tile.x + 1})`);
+            cell.innerHTML = '';
+            this.board[tile.y][tile.x] = null;
+        }
+        this.currentTurn = [];
+        this.renderTray();
+        this.updatePlayButton();
     }
 }
 
