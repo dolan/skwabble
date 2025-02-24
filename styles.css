@@ -22,13 +22,15 @@ body {
 #board { 
     display: grid; 
     gap: 2px; 
-    background: #258; 
+    background: #225588; 
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    /* Make board size responsive */
-    width: calc(15 * var(--cell-size) + 20px);
-    height: calc(15 * var(--cell-size) + 20px);
+    /* Make board size responsive and include gaps in total width */
+    width: calc(15 * var(--cell-size) + 28px);  /* 28px = 14 gaps * 2px + 20px padding */
+    height: calc(15 * var(--cell-size) + 28px);
+    grid-template-columns: repeat(15, var(--cell-size));
+    grid-template-rows: repeat(15, var(--cell-size));
 }
 
 .cell { 
@@ -42,6 +44,7 @@ body {
     font-size: 0.8em;
     position: relative;
     box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+    margin: 0;
 }
 
 .cell.dragover {
@@ -87,14 +90,26 @@ body {
 
 .tile span:first-child {
     font-size: 1.2em;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .tile .points {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 1px;
+    right: 1px;
     font-size: 0.7em;
     color: #666;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1px;
+    border-radius: 2px;
+    min-width: 8px;
+    height: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
 }
 
 .tile.placed {
@@ -102,6 +117,10 @@ body {
     background: #ffe;
     box-shadow: none;
     border-color: #986;
+}
+
+.tile.placed .points {
+    background: rgba(255, 255, 238, 0.8);
 }
 
 .tile.selected {
@@ -120,7 +139,7 @@ body {
 }
 
 #status {
-    background: #258;
+    background: #225588;
     color: white;
     padding: 16px;
     border-radius: 8px;

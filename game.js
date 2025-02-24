@@ -15,11 +15,12 @@ class Game {
         this.bonuses = this.generateBonuses();
         this.tray = [];
         this.totalScore = 0;
+        this.letterPool = this.initializeLetterPool();  // Initialize the letter pool first
         this.initBoard();
-        this.drawTiles(7);
         this.dictionary = new Trie();
-        this.selectedTile = null;
-        this.currentTurn = [];  // Track tiles placed in current turn
+        this.selectedTiles = new Set();
+        this.currentTurn = [];
+        this.drawTiles(7);  // Draw tiles last, after everything is initialized
     }
 
     generateBonuses() {
@@ -72,15 +73,33 @@ class Game {
         }
     }
 
-    drawTiles(count) {
-        const availableLetters = Object.entries(LETTER_POOL)
-            .flatMap(([letter, count]) => Array(count).fill(letter));
-        
-        while (this.tray.length < count && availableLetters.length > 0) {
-            const randomIndex = Math.floor(Math.random() * availableLetters.length);
-            const letter = availableLetters.splice(randomIndex, 1)[0];
-            if (letter) this.tray.push(letter);
+    initializeLetterPool() {
+        // Create a fresh array of all available letters
+        const pool = [];
+        for (const [letter, count] of Object.entries(LETTER_POOL)) {
+            for (let i = 0; i < count; i++) {
+                pool.push(letter);
+            }
         }
+        return pool;
+    }
+
+    drawTiles(count) {
+        // Replenish the letter pool if it's running low
+        if (this.letterPool.length < count) {
+            console.debug('Replenishing letter pool');
+            this.letterPool = this.initializeLetterPool();
+        }
+        
+        // Draw tiles until we have the requested number or the pool is empty
+        while (this.tray.length < count && this.letterPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.letterPool.length);
+            const letter = this.letterPool.splice(randomIndex, 1)[0];
+            console.debug('Drawing letter:', letter);
+            this.tray.push(letter);
+        }
+        
+        console.debug('Tray after drawing:', this.tray);
         this.renderTray();
     }
 
@@ -90,7 +109,7 @@ class Game {
         this.tray.forEach((letter, index) => {
             const tile = document.createElement('div');
             tile.className = 'tile';
-            if (index === this.selectedTile) {
+            if (this.selectedTiles.has(index)) {
                 tile.className += ' selected';
             }
             const letterSpan = document.createElement('span');
@@ -104,6 +123,9 @@ class Game {
             
             tile.draggable = true;
             tile.ondragstart = (e) => {
+                if (!this.selectedTiles.has(index)) {
+                    this.selectedTiles.clear(); // Clear other selections when dragging unselected tile
+                }
                 e.dataTransfer.setData('text/plain', index.toString());
                 e.dataTransfer.effectAllowed = 'move';
             };
@@ -113,13 +135,25 @@ class Game {
     }
 
     selectTile(index) {
-        console.debug('Selected tile:', index, 'letter:', this.tray[index]);
-        this.selectedTile = (this.selectedTile === index) ? null : index;
+        if (this.selectedTiles.has(index)) {
+            this.selectedTiles.delete(index);
+        } else {
+            this.selectedTiles.add(index);
+        }
         this.renderTray();
     }
 
-    placeTile(x, y, tileIndex = this.selectedTile) {
-        if (this.board[y][x] || tileIndex === null || tileIndex >= this.tray.length) {
+    placeTile(x, y, tileIndex = null) {
+        // If no specific tile index provided, use the only selected tile
+        if (tileIndex === null) {
+            if (this.selectedTiles.size !== 1) {
+                console.debug('Must have exactly one tile selected for placement');
+                return;
+            }
+            tileIndex = Array.from(this.selectedTiles)[0];
+        }
+        
+        if (this.board[y][x] || tileIndex >= this.tray.length) {
             console.debug('Tile placement blocked');
             return;
         }
@@ -138,7 +172,8 @@ class Game {
         // Create points span
         const pointSpan = document.createElement('span');
         pointSpan.className = 'points';
-        pointSpan.textContent = this.getLetterScore(letter);
+        const points = this.getLetterScore(letter);
+        pointSpan.textContent = points;
         tile.appendChild(pointSpan);
         
         // Make current turn tiles draggable
@@ -155,7 +190,7 @@ class Game {
         cell.appendChild(tile);
         
         this.currentTurn.push({ x, y, letter });
-        this.selectedTile = null;
+        this.selectedTiles.clear();
         this.renderTray();
         this.updatePlayButton();
         
@@ -192,24 +227,21 @@ class Game {
             return;
         }
         
-        const selectedTiles = [];
-        if (this.selectedTile !== null) {
-            selectedTiles.push(this.selectedTile);
-        }
-        
-        if (selectedTiles.length === 0) {
+        if (this.selectedTiles.size === 0) {
             console.debug('No tiles selected for trade');
             return;
         }
         
-        // Remove selected tiles from highest index to lowest
-        selectedTiles.sort((a, b) => b - a).forEach(index => {
-            this.tray.splice(index, 1);
+        // Remove selected tiles from highest index to lowest and return them to the pool
+        const selectedIndices = Array.from(this.selectedTiles).sort((a, b) => b - a);
+        selectedIndices.forEach(index => {
+            const letter = this.tray.splice(index, 1)[0];
+            if (letter) this.letterPool.push(letter);
         });
         
         // Draw new tiles
-        this.drawTiles(selectedTiles.length);
-        this.selectedTile = null;
+        this.drawTiles(selectedIndices.length);
+        this.selectedTiles.clear();
         this.renderTray();
     }
 
