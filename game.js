@@ -85,7 +85,15 @@ class Game {
             if (index === this.selectedTile) {
                 tile.className += ' selected';
             }
-            tile.textContent = letter;
+            const letterSpan = document.createElement('span');
+            letterSpan.textContent = letter;
+            tile.appendChild(letterSpan);
+            
+            const pointSpan = document.createElement('span');
+            pointSpan.className = 'points';
+            pointSpan.textContent = this.getLetterScore(letter);
+            tile.appendChild(pointSpan);
+            
             tile.draggable = true;
             tile.ondragstart = (e) => {
                 e.dataTransfer.setData('text/plain', index.toString());
@@ -123,6 +131,7 @@ class Game {
         this.currentTurn.push({ x, y, letter });
         this.selectedTile = null;
         this.renderTray();
+        this.updatePlayButton();
         
         console.debug('Current board state:', this.board.map(row => row.join(' ')).join('\n'));
     }
@@ -143,6 +152,12 @@ class Game {
         
         this.currentTurn.splice(tileIndex, 1);
         this.renderTray();
+        this.updatePlayButton();
+    }
+
+    updatePlayButton() {
+        const button = document.querySelector('button');
+        button.textContent = this.currentTurn.length > 0 ? 'Play' : 'End Turn';
     }
 
     tradeTiles() {
@@ -198,7 +213,7 @@ class Game {
 
     getLetterScore(letter) {
         const scores = {
-            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'L': 1, 'N': 1, 'S': 1, 'T': 1, 'R': 1,
+            'A': 1, 'E': 1, 'I': 1, 'O': 1, 'U': 1, 'L': 1, 'N': 1, 'R': 1, 'S': 1, 'T': 1,
             'D': 2, 'G': 2,
             'B': 3, 'C': 3, 'M': 3, 'P': 3,
             'F': 4, 'H': 4, 'V': 4, 'W': 4, 'Y': 4,
@@ -280,7 +295,9 @@ class Game {
         }
         
         mainWord.score *= wordMultiplier;
-        words.push(mainWord);
+        if (mainWord.word.length >= 2) {  // Only add words of length 2 or more
+            words.push(mainWord);
+        }
 
         for (const tile of this.currentTurn) {
             const crossWord = { tiles: [], score: 0, word: '' };
@@ -334,7 +351,7 @@ class Game {
                 }
             }
             
-            if (crossWord.word.length > 1) {
+            if (crossWord.word.length >= 2) {  // Only add words of length 2 or more
                 crossWord.score *= wordMultiplier;
                 words.push(crossWord);
             }

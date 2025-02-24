@@ -70,11 +70,25 @@ body {
     width: calc(var(--cell-size) - 8px);
     height: calc(var(--cell-size) - 8px);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-weight: bold;
     box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
     transition: transform 0.1s ease-in-out;
+    position: relative;
+}
+
+.tile span:first-child {
+    font-size: 1.2em;
+}
+
+.tile .points {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-size: 0.7em;
+    color: #666;
 }
 
 .tile.placed {
@@ -100,13 +114,28 @@ body {
 }
 
 #status {
-    background: white;
-    padding: 12px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #258;
+    color: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     min-height: 60px;
     position: sticky;
     top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#score {
+    font-size: 1.4em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+#message {
+    font-size: 0.9em;
+    opacity: 0.9;
 }
 
 #tray {
@@ -120,8 +149,30 @@ body {
     flex-wrap: wrap;
 }
 
+.button-group {
+    display: flex;
+    gap: 8px;
+}
+
 button {
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
+    background: white;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+button:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 } 
