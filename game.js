@@ -46,6 +46,8 @@ class Game {
                 }
                 cell.dataset.x = x;
                 cell.dataset.y = y;
+                
+                // Desktop drag and drop
                 cell.ondragover = (e) => {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
@@ -68,6 +70,15 @@ class Game {
                 cell.ondragleave = () => {
                     cell.classList.remove('dragover');
                 };
+                
+                // Mobile touch handling - direct tap on cell to place selected tile
+                cell.onclick = () => {
+                    if (this.selectedTiles.size === 1) {
+                        const selectedIndex = Array.from(this.selectedTiles)[0];
+                        this.placeTile(x, y, selectedIndex);
+                    }
+                };
+                
                 boardEl.appendChild(cell);
             }
         }
@@ -123,6 +134,7 @@ class Game {
             pointSpan.textContent = this.getLetterScore(letter);
             tile.appendChild(pointSpan);
             
+            // Desktop drag and drop
             tile.draggable = true;
             tile.ondragstart = (e) => {
                 if (!this.selectedTiles.has(index)) {
@@ -131,7 +143,91 @@ class Game {
                 e.dataTransfer.setData('text/plain', index.toString());
                 e.dataTransfer.effectAllowed = 'move';
             };
+            
+            // Mobile touch handling
+            let touchStartX, touchStartY;
+            let currentlyDragging = false;
+            
+            tile.ontouchstart = (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                
+                // Select the tile on touch start
+                this.selectTile(index);
+                
+                // Don't prevent default here to allow scrolling if needed
+            };
+            
+            tile.ontouchmove = (e) => {
+                if (!this.selectedTiles.has(index)) return;
+                
+                // Prevent scrolling once we determine it's a drag
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                const deltaX = touchX - touchStartX;
+                const deltaY = touchY - touchStartY;
+                
+                // If moved more than 10px, consider it a drag
+                if (!currentlyDragging && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
+                    currentlyDragging = true;
+                }
+                
+                if (currentlyDragging) {
+                    e.preventDefault(); // Prevent scrolling during drag
+                    
+                    // Find the cell under the touch point
+                    const elementsUnderTouch = document.elementsFromPoint(touchX, touchY);
+                    const cellUnderTouch = elementsUnderTouch.find(el => el.classList.contains('cell'));
+                    
+                    // Highlight the cell if found
+                    document.querySelectorAll('.cell.dragover').forEach(cell => {
+                        cell.classList.remove('dragover');
+                    });
+                    
+                    if (cellUnderTouch) {
+                        cellUnderTouch.classList.add('dragover');
+                    }
+                }
+            };
+            
+            tile.ontouchend = (e) => {
+                if (!currentlyDragging || !this.selectedTiles.has(index)) {
+                    currentlyDragging = false;
+                    return;
+                }
+                
+                e.preventDefault();
+                
+                // Find the cell under the touch point
+                const touch = e.changedTouches[0];
+                const elementsUnderTouch = document.elementsFromPoint(touch.clientX, touch.clientY);
+                const cellUnderTouch = elementsUnderTouch.find(el => el.classList.contains('cell'));
+                
+                // Remove highlight from all cells
+                document.querySelectorAll('.cell.dragover').forEach(cell => {
+                    cell.classList.remove('dragover');
+                });
+                
+                // If we found a cell, place the tile there
+                if (cellUnderTouch) {
+                    const x = parseInt(cellUnderTouch.dataset.x);
+                    const y = parseInt(cellUnderTouch.dataset.y);
+                    this.placeTile(x, y, index);
+                }
+                
+                currentlyDragging = false;
+            };
+            
+            tile.ontouchcancel = () => {
+                currentlyDragging = false;
+                document.querySelectorAll('.cell.dragover').forEach(cell => {
+                    cell.classList.remove('dragover');
+                });
+            };
+            
+            // Regular click for selection
             tile.onclick = () => this.selectTile(index);
+            
             trayEl.appendChild(tile);
         });
     }
