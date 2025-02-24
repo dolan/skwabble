@@ -38,6 +38,23 @@ class Trie {
             this.insert(word);
         }
     }
+
+    // Load words from a JSON file
+    async loadFromFile(filePath) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const words = await response.json();
+            this.loadFromArray(words);
+            console.debug('Dictionary loaded successfully with', words.length, 'words');
+            return true;
+        } catch (err) {
+            console.error('Failed to load dictionary:', err);
+            return false;
+        }
+    }
 }
 
 // Export the Trie class

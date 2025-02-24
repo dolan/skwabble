@@ -6,6 +6,8 @@ const LETTER_POOL = {
     N:6, O:8, P:2, Q:1, R:6, S:4, T:6, U:4, V:2, W:2, X:1, Y:2, Z:1
 };
 
+import { Trie } from './trie.js';
+
 class Game {
     constructor() {
         this.board = Array(BOARD_SIZE).fill().map(() => 
@@ -14,7 +16,7 @@ class Game {
         this.tray = [];
         this.initBoard();
         this.drawTiles(7);
-        this.db = null;
+        this.dictionary = new Trie();
         this.selectedTile = null;
         this.currentTurn = [];  // Track tiles placed in current turn
     }
@@ -172,21 +174,11 @@ class Game {
     async loadDictionary() {
         try {
             console.debug('Loading dictionary...');
-            const response = await fetch('db/dictionary.db');
-            const arrayBuffer = await response.arrayBuffer();
-            console.debug('Dictionary file loaded, size:', arrayBuffer.byteLength, 'bytes');
-            
-            const SQL = await initSqlJs({
-                locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm'
-            });
-            this.db = new SQL.Database(new Uint8Array(arrayBuffer));
-            console.debug('Dictionary loaded successfully');
-            
-            // Test query to verify database
-            const test = this.db.prepare("SELECT COUNT(*) as count FROM words");
-            const result = test.step() ? test.get().count : 0;
-            console.debug('Dictionary contains', result, 'words');
-            test.free();
+            const success = await this.dictionary.loadFromFile('db/dictionary.json');
+            if (!success) {
+                console.error('Failed to load dictionary');
+                this.validateWord = () => true;
+            }
         } catch (err) {
             console.error('Failed to load dictionary:', err);
             this.validateWord = () => true;
@@ -194,23 +186,13 @@ class Game {
     }
 
     validateWord(word) {
-        if (!this.db) {
+        if (!this.dictionary) {
             console.debug('Dictionary not loaded, allowing word:', word);
             return true;
         }
-        try {
-            console.debug('Checking dictionary for word:', word);
-            const stmt = this.db.prepare("SELECT 1 FROM words WHERE word = ? LIMIT 1");
-            stmt.bind([word.toLowerCase()]);
-            const result = stmt.step();
-            stmt.free();
-            console.debug('Dictionary result for', word, ':', result ? 'valid' : 'invalid');
-            return result;
-        } catch (err) {
-            console.error('Word validation error:', err);
-            console.debug('Allowing word due to error:', word);
-            return true;
-        }
+        const isValid = this.dictionary.search(word);
+        console.debug('Dictionary result for', word, ':', isValid ? 'valid' : 'invalid');
+        return isValid;
     }
 
     getLetterScore(letter) {
