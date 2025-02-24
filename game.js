@@ -106,6 +106,8 @@ class Game {
     renderTray() {
         const trayEl = document.getElementById('tray');
         trayEl.innerHTML = '';
+        console.debug('Rendering tray with letters:', this.tray);
+        
         this.tray.forEach((letter, index) => {
             const tile = document.createElement('div');
             tile.className = 'tile';
@@ -232,17 +234,55 @@ class Game {
             return;
         }
         
-        // Remove selected tiles from highest index to lowest and return them to the pool
-        const selectedIndices = Array.from(this.selectedTiles).sort((a, b) => b - a);
-        selectedIndices.forEach(index => {
-            const letter = this.tray.splice(index, 1)[0];
-            if (letter) this.letterPool.push(letter);
-        });
+        // Count how many tiles we're trading
+        const tradeCount = this.selectedTiles.size;
+        console.debug(`Trading ${tradeCount} tiles`);
         
-        // Draw new tiles
-        this.drawTiles(selectedIndices.length);
+        // Create a new array for the updated tray
+        const newTray = [];
+        
+        // Keep unselected tiles
+        for (let i = 0; i < this.tray.length; i++) {
+            if (!this.selectedTiles.has(i)) {
+                newTray.push(this.tray[i]);
+            } else {
+                // Return selected tiles to the pool
+                console.debug(`Returning ${this.tray[i]} to the pool`);
+                this.letterPool.push(this.tray[i]);
+            }
+        }
+        
+        // Replace the tray with our new filtered tray
+        this.tray = newTray;
+        
+        // Clear selections
         this.selectedTiles.clear();
-        this.renderTray();
+        
+        // Draw new tiles to replace the traded ones
+        const tilesToDraw = tradeCount;
+        console.debug(`Drawing ${tilesToDraw} new tiles`);
+        
+        // Draw new tiles directly
+        for (let i = 0; i < tilesToDraw; i++) {
+            if (this.letterPool.length === 0) {
+                console.debug('Letter pool empty, replenishing');
+                this.letterPool = this.initializeLetterPool();
+            }
+            
+            const randomIndex = Math.floor(Math.random() * this.letterPool.length);
+            const letter = this.letterPool.splice(randomIndex, 1)[0];
+            console.debug('Drew new letter:', letter);
+            this.tray.push(letter);
+        }
+        
+        // Force a complete redraw of the tray
+        console.debug('Final tray after trade:', this.tray);
+        const trayEl = document.getElementById('tray');
+        trayEl.innerHTML = ''; // Clear the tray element
+        this.renderTray();     // Rebuild it
+        
+        // Update status message
+        this.updateStatus(`Traded ${tradeCount} tiles for new ones`);
     }
 
     async loadDictionary() {
