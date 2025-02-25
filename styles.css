@@ -52,15 +52,7 @@ body {
     box-shadow: inset 0 0 4px rgba(0,0,255,0.3);
 }
 
-.bonus::after {
-    content: attr(data-bonus);
-    position: absolute; 
-    bottom: 2px; 
-    right: 2px;
-    font-size: 0.6em; 
-    color: #666;
-}
-
+/* Bonus styling */
 .bonus[data-bonus^="2W"],
 .bonus[data-bonus^="3W"] {
     background: #ffebf3;  /* Light pink for word multipliers */
@@ -71,63 +63,74 @@ body {
     background: #e6f3ff;  /* Light blue for letter multipliers */
 }
 
+/* Tile styling */
 .tile { 
-    background: #ffd; 
+    background-color: #ffe; 
     border: 1px solid #ca8;
     cursor: pointer; 
     user-select: none;
     width: calc(var(--cell-size) - 8px);
     height: calc(var(--cell-size) - 8px);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     font-weight: bold;
-    box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    box-shadow: none;
     transition: transform 0.1s ease-in-out;
     position: relative;
-    touch-action: none; /* Prevent scrolling while dragging on mobile */
+    touch-action: none;
+    z-index: 100;
 }
 
 .tile span:first-child {
     font-size: 1.2em;
     line-height: 1;
     position: relative;
-    z-index: 1;
+    z-index: 101;
 }
 
 .tile .points {
     position: absolute;
     bottom: 1px;
-    right: 1px;
-    font-size: 0.7em;
+    right: 2px;
+    font-size: 0.55em;
+    font-weight: normal;
     color: #666;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 1px;
-    border-radius: 2px;
-    min-width: 8px;
-    height: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 0;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    min-width: 0;
+    text-align: right;
+    box-shadow: none;
+    z-index: 102;
+    border: none;
 }
 
 .tile.placed {
     cursor: default;
-    background: #ffe;
+    background-color: #ffe;
     box-shadow: none;
-    border-color: #986;
-}
-
-.tile.placed .points {
-    background: rgba(255, 255, 238, 0.8);
+    border-color: #ca8;
+    opacity: 1.0;
 }
 
 .tile.selected {
     background: #ffa;
     box-shadow: 0 0 4px rgba(0,0,0,0.4);
     transform: scale(1.1);
+}
+
+/* Ensure tiles are above bonus markers */
+.cell .tile {
+    position: relative;
+    z-index: 2;
+    background-color: #ffe;
+    border: 1px solid #ca8;
+}
+
+/* Add a solid background to completely cover the cell background */
+.cell.has-tile {
+    background-image: none !important; /* Remove background image when tile is present */
 }
 
 #controls { 

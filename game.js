@@ -43,6 +43,30 @@ class Game {
                 if (bonus) {
                     cell.className += ' bonus';
                     cell.dataset.bonus = bonus;
+                    
+                    // Create a data URL for the bonus marker
+                    const canvas = document.createElement('canvas');
+                    const size = 40; // Size of the canvas
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Clear canvas
+                    ctx.clearRect(0, 0, size, size);
+                    
+                    // Draw the bonus text
+                    ctx.font = '10px sans-serif';
+                    ctx.fillStyle = '#666';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(bonus, 2, size - 2);
+                    
+                    // Set the background image
+                    const dataUrl = canvas.toDataURL();
+                    cell.style.backgroundImage = `url(${dataUrl})`;
+                    cell.style.backgroundPosition = 'left bottom';
+                    cell.style.backgroundRepeat = 'no-repeat';
+                    cell.style.backgroundSize = 'auto';
                 }
                 cell.dataset.x = x;
                 cell.dataset.y = y;
@@ -126,10 +150,13 @@ class Game {
             if (this.selectedTiles.has(index)) {
                 tile.className += ' selected';
             }
+            
+            // Create letter span
             const letterSpan = document.createElement('span');
             letterSpan.textContent = letter;
             tile.appendChild(letterSpan);
             
+            // Create points span
             const pointSpan = document.createElement('span');
             pointSpan.className = 'points';
             pointSpan.textContent = this.getLetterScore(letter);
@@ -260,6 +287,7 @@ class Game {
         const letter = this.tray.splice(tileIndex, 1)[0];
         console.debug('Placing tile:', letter, 'at position:', x, y);
         
+        // Create a simple tile
         const tile = document.createElement('div');
         tile.className = 'tile placed';
         
@@ -287,6 +315,7 @@ class Game {
         
         const cell = document.querySelector(`#board .cell:nth-child(${y * BOARD_SIZE + x + 1})`);
         cell.appendChild(tile);
+        cell.classList.add('has-tile');
         
         this.currentTurn.push({ x, y, letter });
         this.selectedTiles.clear();
@@ -308,7 +337,14 @@ class Game {
         this.board[y][x] = null;
         
         const cell = document.querySelector(`#board .cell:nth-child(${y * BOARD_SIZE + x + 1})`);
-        cell.innerHTML = '';
+        
+        // Remove the tile element
+        const tileElement = cell.querySelector('.tile');
+        if (tileElement) {
+            cell.removeChild(tileElement);
+        }
+        
+        cell.classList.remove('has-tile');
         
         this.currentTurn.splice(tileIndex, 1);
         this.renderTray();
@@ -585,7 +621,7 @@ class Game {
         // Update DOM - move the entire tile element to maintain draggability
         const fromCell = document.querySelector(`#board .cell:nth-child(${fromY * BOARD_SIZE + fromX + 1})`);
         const toCell = document.querySelector(`#board .cell:nth-child(${toY * BOARD_SIZE + toX + 1})`);
-        const tileElement = fromCell.firstChild;
+        const tileElement = fromCell.querySelector('.tile');
         
         // Update the drag data to reflect new position
         tileElement.ondragstart = (e) => {
@@ -593,8 +629,13 @@ class Game {
             e.dataTransfer.effectAllowed = 'move';
         };
         
+        // Remove the tile from source cell
         fromCell.removeChild(tileElement);
+        fromCell.classList.remove('has-tile');
+        
+        // Add the tile to destination cell
         toCell.appendChild(tileElement);
+        toCell.classList.add('has-tile');
     }
 
     recallTiles() {
@@ -602,7 +643,14 @@ class Game {
         for (const tile of this.currentTurn) {
             this.tray.push(tile.letter);
             const cell = document.querySelector(`#board .cell:nth-child(${tile.y * BOARD_SIZE + tile.x + 1})`);
-            cell.innerHTML = '';
+            
+            // Remove the tile element
+            const tileElement = cell.querySelector('.tile');
+            if (tileElement) {
+                cell.removeChild(tileElement);
+            }
+            
+            cell.classList.remove('has-tile');
             this.board[tile.y][tile.x] = null;
         }
         this.currentTurn = [];
