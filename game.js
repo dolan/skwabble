@@ -102,8 +102,9 @@ class Game {
             this.letterPool = this.initializeLetterPool();
         }
         
-        // Draw tiles until we have the requested number or the pool is empty
-        while (this.tray.length < count && this.letterPool.length > 0) {
+        // Draw exactly 'count' number of tiles, or as many as available
+        const targetCount = Math.min(count, this.letterPool.length);
+        for (let i = 0; i < targetCount; i++) {
             const randomIndex = Math.floor(Math.random() * this.letterPool.length);
             const letter = this.letterPool.splice(randomIndex, 1)[0];
             console.debug('Drawing letter:', letter);
