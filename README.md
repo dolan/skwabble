@@ -4,6 +4,10 @@ A browser-based word game where you strategically place letters on a board to fo
 
 ![Skwabble Game Screenshot](img/skwabble.jpg)
 
+# Demo
+
+The game demo can be played on [github pages](https://dolan.github.io/skwabble/index.html)
+
 ## How to Play
 
 1. **Place Letters**: Drag and drop letters from your tray onto the board to form words. Letters must be placed in a continuous line, either horizontally or vertically.
@@ -56,6 +60,3 @@ This project is open source and available under the MIT License.
 Dictionary file created from unofficial word list 
 https://gist.github.com/deostroll/7693b6f3d48b44a89ee5f57bf750bd32
 
-# Demo
-
-The game demo can be played on [github pages](https://dolan.github.io/skwabble/index.html)

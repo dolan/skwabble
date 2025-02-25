@@ -227,4 +227,24 @@ button:active {
         padding: 20px;  /* More padding for better touch interaction */
         gap: 8px;  /* More space between tiles */
     }
+}
+
+.github-link {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.github-link a {
+    color: #225588;
+    text-decoration: none;
+    font-size: 0.9em;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.github-link a:hover {
+    background-color: #f0f0f0;
+    text-decoration: underline;
 } 
