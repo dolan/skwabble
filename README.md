@@ -2,7 +2,7 @@
 
 A browser-based word game where you strategically place letters on a board to form words and score points.
 
-![Skwabble Game Screenshot](img/screenshot.jpg)
+![Skwabble Game Screenshot](img/skwabble.jpg)
 
 ## How to Play
 
@@ -46,9 +46,16 @@ Built using vanilla JavaScript, HTML, and CSS. The game features:
 ## Getting Started
 
 1. Clone the repository
-2. Open `skwabble.html` in a modern web browser
+2. Open `index.html` in a modern web browser
 3. Start placing letters and forming words!
 
 ## License
 
 This project is open source and available under the MIT License. 
+
+Dictionary file created from unofficial word list 
+https://gist.github.com/deostroll/7693b6f3d48b44a89ee5f57bf750bd32
+
+# Demo
+
+The game demo can be played on [github pages](https://dolan.github.io/skwabble/index.html)
